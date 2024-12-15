@@ -5,7 +5,7 @@ import { AppModule } from './app.module';
 import { config as dotenv } from 'dotenv';
 import { config, swaggerConfig } from './config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Logger } from '@/utils';
+import { Logger, swagerTags } from '@/utils';
 import { ValidationPipe } from '@nestjs/common/pipes';
 import { ClassSerializerInterceptor } from '@nestjs/common';
 import { HttpExceptionFilter } from './decorators';
@@ -61,6 +61,8 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerDocument);
+  document.tags = swagerTags;
+
   SwaggerModule.setup(swaggerConfig.path, app, document);
 
   await app.listen(config().port);

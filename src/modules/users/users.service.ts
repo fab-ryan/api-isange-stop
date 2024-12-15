@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+// import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseService } from '@/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -56,5 +56,22 @@ export class UsersService {
       withDeleted: true,
     });
     return exists;
+  }
+  async findAllUsers() {
+    try {
+      const users = await this.userRepository.find();
+      return this.responseService.response({
+        data: users,
+        message: 'Users retrieved successfully',
+        key: 'users',
+      });
+    } catch (error) {
+      const message = (error as Error).message;
+      return this.responseService.response({
+        success: false,
+        statusCode: 400,
+        message,
+      });
+    }
   }
 }
