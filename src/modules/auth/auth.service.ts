@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthDto, ResetAuthDto } from './dto/create-auth.dto';
+import {
+  ChangePasswordDto,
+  CreateAuthDto,
+  ResetAuthDto,
+  ResetPasswordDto,
+} from './dto/create-auth.dto';
 // import { UpdateAuthDto } from './dto/update-auth.dto';
 import { ResponseService } from '@/utils';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -36,11 +41,11 @@ export class AuthService {
       if (!isPasswordMatch) {
         return this.responseService.response({
           success: false,
-          statusCode: 400,
-          message: 'Password is incorrect',
+          statusCode: 401,
+          message: 'Incorrect Username or Password',
         });
       }
-      const payload = { email: user.email, role: user.role };
+      const payload = { email: user.email, role: user.role, id: user.id };
       const token = await this.generateToken(payload);
       return this.responseService.response({
         success: true,
@@ -51,7 +56,7 @@ export class AuthService {
       });
     } catch (error) {
       const message = (error as Error).message;
-      return this.responseService.response({
+      return this.responseService.errorResponse({
         success: false,
         statusCode: 400,
         message,
@@ -70,7 +75,7 @@ export class AuthService {
     return this.jwtService.signAsync(payload);
   }
 
-  async resetPassword(params: ResetAuthDto) {
+  async forgotPassword(params: ResetAuthDto) {
     try {
       const { email } = params;
       const emailExists = await this.emailExists(email);
@@ -101,6 +106,85 @@ export class AuthService {
     } catch (error) {
       const message = (error as Error).message;
       return this.responseService.response({
+        success: false,
+        statusCode: 400,
+        message,
+      });
+    }
+  }
+
+  async changePassword(payload: ChangePasswordDto, user: any) {
+    try {
+      const userExists = await this.emailExists(user.email);
+      if (!userExists) {
+        return this.responseService.response({
+          success: false,
+          statusCode: 400,
+          message: 'Email not found',
+        });
+      }
+      const { password, newpassword } = payload;
+      const userPassword = await this.userRepository.findOne({
+        where: { email: user.email },
+      });
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        userPassword.password,
+      );
+      if (!isPasswordMatch) {
+        return this.responseService.response({
+          success: false,
+          statusCode: 400,
+          message: 'Incorrect Password',
+        });
+      }
+      const hashedPassword = await bcrypt.hash(newpassword, 10);
+      await this.userRepository.update(
+        { email: user.email },
+        { password: hashedPassword },
+      );
+      return this.responseService.response({
+        success: true,
+        statusCode: 200,
+        message: 'Password changed successfully',
+      });
+    } catch (error) {
+      const message = (error as Error).message;
+      return this.responseService.errorResponse({
+        success: false,
+        statusCode: 400,
+        message,
+      });
+    }
+  }
+
+  async resetPassword(payload: ResetPasswordDto) {
+    try {
+      const { token, password } = payload;
+      const user = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      const emailExists = await this.emailExists(user.email);
+      if (!emailExists) {
+        return this.responseService.response({
+          success: false,
+          statusCode: 400,
+          message: 'Email not found',
+        });
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await this.userRepository.update(
+        { email: user.email },
+        { password: hashedPassword },
+      );
+      return this.responseService.response({
+        success: true,
+        statusCode: 200,
+        message: 'Password reset successful',
+      });
+    } catch (error) {
+      const message = (error as Error).message;
+      return this.responseService.errorResponse({
         success: false,
         statusCode: 400,
         message,

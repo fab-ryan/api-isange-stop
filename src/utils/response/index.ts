@@ -35,4 +35,19 @@ export class ResponseService {
     };
     return response;
   }
+
+  public errorResponse(result: IRequest): ResponseDto {
+    const { route, method } = this.request;
+    const response: ResponseDto = {
+      success: result.success,
+      statusCode: result.statusCode,
+      [result.key ?? 'data']: result.data,
+      path: route.path,
+      method: method,
+      requestId: result.requestId,
+      message: result.message,
+      timestamp: new Date(Date.now()).toISOString(),
+    };
+    return response;
+  }
 }

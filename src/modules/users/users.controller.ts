@@ -3,6 +3,9 @@ import {
   Get,
   Post,
   Body,
+  UseGuards,
+  Param,
+  ParseUUIDPipe,
   // Patch,
   // Param,
   // Delete,
@@ -10,8 +13,16 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 // import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ResponseService } from '@/utils';
+import { Roles } from '@/decorators';
+import { Roles as RolesEnum } from '@/enums';
+import { AuthGuard } from '@/guards';
 
 @Controller('users')
 @ApiTags('Users')
@@ -33,9 +44,21 @@ export class UsersController {
   }
 
   @Get()
+  @ApiBearerAuth()
+  @Roles(RolesEnum.ADMIN)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get all users', description: 'Get all users' })
   findAll() {
     return this.usersService.findAllUsers();
+  }
+
+  @ApiBearerAuth()
+  @Roles(RolesEnum.ADMIN)
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get user by id', description: 'Get user by id' })
+  @Get('getUserById')
+  getUserById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.findOneUser(id);
   }
 
   // @Get(':id')

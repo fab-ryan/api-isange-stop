@@ -1,12 +1,21 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { DBModule } from '@/extra';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailsModule } from './modules/mails/mails.module';
+import { JwtService } from '@nestjs/jwt';
+import { AuthMiddleware } from './middlewares';
+import { SharedModule } from './shared';
+import { securePaths } from './utils';
 
 @Module({
-  imports: [UsersModule, DBModule, AuthModule, MailsModule],
+  imports: [SharedModule, UsersModule, DBModule, AuthModule, MailsModule],
   controllers: [],
-  providers: [],
+  providers: [JwtService],
+  exports: [JwtService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AuthMiddleware).forRoutes(...securePaths);
+  }
+}

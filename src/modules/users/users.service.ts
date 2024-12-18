@@ -74,4 +74,31 @@ export class UsersService {
       });
     }
   }
+
+  async findOneUser(id: string) {
+    try {
+      const user = await this.userRepository.findOne({
+        withDeleted: true,
+        where: { id },
+      });
+      if (!user) {
+        return this.responseService.response({
+          data: null,
+          message: 'User not found',
+        });
+      }
+      return this.responseService.response({
+        data: user,
+        message: 'User retrieved successfully',
+        key: 'user',
+      });
+    } catch (error) {
+      const message = (error as Error).message;
+      return this.responseService.response({
+        success: false,
+        statusCode: 400,
+        message,
+      });
+    }
+  }
 }

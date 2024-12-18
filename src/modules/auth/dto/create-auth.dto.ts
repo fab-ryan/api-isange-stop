@@ -55,3 +55,69 @@ export class ResetAuthDto {
   })
   email: string;
 }
+
+export class ChangePasswordDto {
+  @ApiProperty({
+    example: 'password',
+    description: 'The password of the user',
+  })
+  @IsString()
+  @IsNotEmpty({
+    message: 'Password is required',
+  })
+  @MinLength(6, {
+    message: 'Password must be at least 6 characters',
+  })
+  password: string;
+
+  @ApiProperty({
+    example: 'newpassword',
+    description: 'The new password of the user',
+  })
+  @IsString()
+  @IsNotEmpty({
+    message: 'New Password is required',
+  })
+  @MinLength(6, {
+    message: 'New Password must be at least 6 characters',
+  })
+  newpassword: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({
+    example: 'password',
+    description: 'The password of the user',
+  })
+  @IsString()
+  @IsNotEmpty({
+    message: 'Password is required',
+  })
+  @MinLength(6, {
+    message: 'Password must be at least 6 characters',
+  })
+  password: string;
+
+  @ApiProperty({
+    example: 'newpassword',
+    description: 'The new password of the user',
+  })
+  @IsString()
+  @IsNotEmpty({
+    message: 'New Password is required',
+  })
+  @MinLength(6, {
+    message: 'New Password must be at least 6 characters',
+  })
+  newpassword: string;
+
+  @ApiProperty({
+    example: 'token',
+    description: 'The token sent to the user',
+  })
+  @IsString()
+  @IsNotEmpty({
+    message: 'Token is required',
+  })
+  token: string;
+}
